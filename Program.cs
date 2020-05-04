@@ -112,11 +112,11 @@ namespace Snake
             //Create obstacles objects and initialise certain random position of obstacles at every game play
             //The randomise obstacles will not exist in the first row at the beginning.
             Random randomNumbersGenerator = new Random();
-            obstacles.Add(new Position(randomNumbersGenerator.Next(1, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
-            obstacles.Add(new Position(randomNumbersGenerator.Next(1, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
-            obstacles.Add(new Position(randomNumbersGenerator.Next(1, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
-            obstacles.Add(new Position(randomNumbersGenerator.Next(1, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
-            obstacles.Add(new Position(randomNumbersGenerator.Next(1, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
+            obstacles.Add(new Position(randomNumbersGenerator.Next(2, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
+            obstacles.Add(new Position(randomNumbersGenerator.Next(2, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
+            obstacles.Add(new Position(randomNumbersGenerator.Next(2, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
+            obstacles.Add(new Position(randomNumbersGenerator.Next(2, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
+            obstacles.Add(new Position(randomNumbersGenerator.Next(2, Console.WindowHeight), randomNumbersGenerator.Next(0, Console.WindowWidth)));
             
             //Show the obstacle in the windows with marking of "="
             foreach (Position obstacle in obstacles)
@@ -188,7 +188,9 @@ namespace Snake
                 //close only when enter key is pressed
                 while (Console.ReadKey().Key != ConsoleKey.Enter) {}
                 return 1;
+                
             }
+            
             return 0;
         }
 
@@ -209,7 +211,7 @@ namespace Snake
 
                 int userPoints = (snakeElements.Count - 4) * 100 - negativePoints;//points calculated for player
                 userPoints = Math.Max(userPoints, 0); //if (userPoints < 0) userPoints = 0;
-
+                
                 //display game won text and user points
                 PrintLinesInCenter("You Win!", "Your points are:" + userPoints, "Press enter to exit the game!");
                 SavePointsToFile(userPoints);//saving points to files
@@ -232,7 +234,7 @@ namespace Snake
             Random randomNumbersGenerator = new Random();
             do
             {
-                food = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight), //Food generated within console height
+                food = new Position(randomNumbersGenerator.Next(1, Console.WindowHeight), //Food generated within console height
                     randomNumbersGenerator.Next(0, Console.WindowWidth)); //Food generate within console width
             }
             //a loop is created - while the program contains food and the obstacle is not hit 
@@ -255,8 +257,8 @@ namespace Snake
             Position obstacle = new Position();
             do
             {
-                obstacle = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight),
-                    randomNumbersGenerator.Next(0, Console.WindowWidth));
+                obstacle = new Position(randomNumbersGenerator.Next(1, Console.WindowHeight),
+                    randomNumbersGenerator.Next(1, Console.WindowWidth));
             }
             //if snake or obstacles are already at certain position, new obstacle will not be drawn there
             //new obstacle will not be drawn at the same row & column of food
@@ -345,6 +347,16 @@ namespace Snake
             Console.Clear();
         }
 
+        public void PrintUserPoint(int userPoints, Queue<Position> snakeElements, int negativePoints)
+        {
+            userPoints = (snakeElements.Count - 4) * 100 - negativePoints;//points calculated for player
+            userPoints = Math.Max(userPoints, 0); //if (userPoints < 0) userPoints = 0;
+            Console.SetCursorPosition(40, 0);
+            Console.WriteLine("                  ");
+            Console.SetCursorPosition(40, 0);
+            Console.WriteLine("Score: {0}", userPoints);
+        }
+
 
         /// <summary>
         /// Main starts here
@@ -363,8 +375,10 @@ namespace Snake
             int lastFoodTime = 0;
             int foodDissapearTime = 10000; //food dissappears after 10 second 
             int negativePoints = 0;
+            int userPoints = 0;
             Position[] directions = new Position[4];
 
+            Console.SetWindowSize(56, 38);
             Program p = new Program();
             //display start screen before background music and game start 
             p.DisplayStartScreen();
@@ -391,7 +405,7 @@ namespace Snake
             Queue<Position> snakeElements = new Queue<Position>();
             for (int i = 0; i <= 3; i++) // Length of the snake was reduced to 3 units of *
             {
-                snakeElements.Enqueue(new Position(0, i));
+                snakeElements.Enqueue(new Position(1, i));
             }
 
             //To position food randomly when the program runs first time
@@ -407,9 +421,10 @@ namespace Snake
 
             while (true)
             {
+                
                 //negative points is initialized as 0 at the beginning of the game. As the player reaches out for food
                 //negative points increment depending how far the food is
-                negativePoints++;
+                negativePoints++;            
 
                 //Check the user input direction
                 p.CheckUserInput(ref direction, right, left, down, up);
@@ -426,6 +441,8 @@ namespace Snake
                 if (snakeNewHead.row < 0) snakeNewHead.row = Console.WindowHeight - 1;
                 if (snakeNewHead.row >= Console.WindowHeight) snakeNewHead.row = 0;
                 if (snakeNewHead.col >= Console.WindowWidth) snakeNewHead.col = 0;
+
+                p.PrintUserPoint(userPoints, snakeElements, negativePoints);
 
                 //Check for GameOver Criteria
                 int gameOver=p.GameOverCheck(currentTime, snakeElements, snakeNewHead, negativePoints,obstacles);
@@ -479,6 +496,7 @@ namespace Snake
                 if (Environment.TickCount - lastFoodTime >= foodDissapearTime)
                 {
                     negativePoints = negativePoints + 50;
+            
                     Console.SetCursorPosition(food.col, food.row);
                     Console.Write(" ");
 
@@ -486,13 +504,15 @@ namespace Snake
                     p.GenerateFood(ref food, snakeElements, obstacles);
                     lastFoodTime = Environment.TickCount;
                 }
-             
+                
                 //snake moving speed increased 
                 sleepTime -= 0.01;
 
                 //pause the execution thread of snake moving speed
                 Thread.Sleep((int)sleepTime);
+                
             }
+            
         }
     }
 }
